@@ -32,4 +32,25 @@ class AuthController extends Controller
 
         return $this->successResponse($responseData, 'Login successful');
     }
+
+    public function register(Request $request):JsonResponse
+    {
+        $validated =  $request->validate([
+            'name' => 'required',
+            'email' => 'required|email|unique:users',
+            'password' => 'required|confirmed'
+        ]);
+
+        $validated['password'] = bcrypt($validated['password']);
+        $user = User::create($validated);
+        $token = $user->createToken('api_token')->plainTextToken;
+
+        $responseData = [
+            'user' => $user['name'],
+            'access_token' => $token,
+            'token_type' => 'Bearer'
+        ];
+
+        return $this->successResponse($responseData, 'Registration successful');
+    }
 }
